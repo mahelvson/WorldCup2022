@@ -3,13 +3,11 @@ import json
 import pandas as pd
 
 from bs4 import BeautifulSoup
-
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-
 from webdriver_manager.chrome import ChromeDriverManager
 
 
@@ -53,7 +51,6 @@ def check_pages_number(driver):
     number_of_pages = [value.string for value in soup.findChild('div')]
     
     return number_of_pages
-
 
 def get_single_table(driver, number_of_pages):
     """Single table consult"""
@@ -107,7 +104,6 @@ def read_a_list_of_dates(list_of_ids, template, dict_of_dates):
         df_single_ranking['WorldCup'] = pd.to_datetime(dict_of_dates[id]).year
         df_single_ranking = df_single_ranking.set_index('WorldCup')
         multiple_rankings = pd.concat([multiple_rankings, df_single_ranking], axis = 0)
-
 
     return multiple_rankings
 
