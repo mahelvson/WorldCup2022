@@ -27,18 +27,13 @@ def connect_fifa_ranking(all_ranking=True, start_id=1):
 
     new_url = driver.current_url
     last_id = new_url.split('id')[1]
-    template_url = new_url.split(last_id)[0]
+    template_url = new_url.split('id')[0]
 
     rankings = [start_id, int(last_id), template_url]
     dict_of_dates = read_all_dates(driver)
     driver.quit()
 
     return rankings, dict_of_dates
-
-
-def accept_cookies(driver):
-    driver.find_element_by_id("onetrust-accept-btn-handler").click()
-
 
 def read_all_dates(driver):
     """Read all dates available"""
@@ -63,8 +58,9 @@ def check_pages_number(driver):
 def get_single_table(driver, number_of_pages):
     """Single table consult"""
     df_full_ranking = pd.DataFrame()
-    accept_cookies(driver)
+    #accept_cookies(driver)
     for _ in number_of_pages: # click to the next (page number_of_pages) times
+        driver.implicitly_wait(15)
         element_table = driver.find_element_by_class_name("table_rankingTable__7gmVl")
         html_content_table = element_table.get_attribute('outerHTML')
         soup_table = BeautifulSoup(html_content_table, 'html.parser')
@@ -74,27 +70,18 @@ def get_single_table(driver, number_of_pages):
         element = driver.find_element_by_xpath("/html/body/div[1]/div/div[3]/main/section[2]/div/div/div[2]/div/div/div/div/div[3]/div/button/div")
         driver.execute_script("arguments[0].scrollIntoView();", element)
         driver.execute_script("arguments[0].click();", element)
-        #element = driver.find_element_by_xpath("/html/body/div[1]/div/div[3]/main/section[2]/div/div/div[2]/div/div/div/div/div[3]/div/button/div/svg")
-        #wait = WebDriverWait(driver, 10)
-        #element_button = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[3]/main/section[2]/div/div/div[2]/div/div/div/div/div[3]/div/button/div")))
-        #element_button.click()
-    #df_single_table['Team'] = df_single_table.apply(filter_names, axis=1)
+        
     df_full_ranking = df_full_ranking[['RK', 'Team', 'Total PointsPTS']]
     df_full_ranking.columns = ['RK', 'Team', 'PTS']
 
     return df_full_ranking
 
-def filter_names(row):
-    """Some data cleaning"""
-    row['Team'] = row['Team'][:-3]
-
-    return row
-
 
 def read_single_date_ranking(ranking_id, template, dict_of_dates):
     """Read ranking for a single date"""
-    if f'id{ranking_id}' in dict_of_dates.keys():
-        main_url = template + f'{ranking_id}'
+    if ranking_id in dict_of_dates.keys():
+        main_url = template + ranking_id
+        print(f'main_url = {main_url}')
         service = Service(ChromeDriverManager().install())
         service.start()
         driver = webdriver.Chrome(service.path)
@@ -111,45 +98,16 @@ def read_single_date_ranking(ranking_id, template, dict_of_dates):
 
         return f'The id{ranking_id} does not exist in dict_of_dates'
 
-def get_fifa_ranking():
-    """This is the main function"""
-    rankings, driver = connect_fifa_ranking()
-    accept_cookies(driver)
-
-    html_content = element.get_attribute('outerHTML')
-    # print(html_content)
-
-    driver.quit()
-
-
-"""
-driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-driver.find_element_by_id("onetrust-accept-btn-handler").click() # accept cookies
-element = driver.find_element_by_class_name("table_rankingTable__7gmVl")
-
-html_content = element.get_attribute('outerHTML')
-soup = BeautifulSoup(html_content, 'html.parser')
-table = soup.find(name='table')
-
-df_full = pd.read_html(str(table))
-
-print(df_full)
+def read_a_list_of_dates(list_of_ids, template, dict_of_dates):
+    """Read a list of dates given as ids"""
+    multiple_rankings = pd.DataFrame()
+    for id in list_of_ids:
+        print(f'Scrapping Ranking in {dict_of_dates[id]}')
+        df_single_ranking = read_single_date_ranking(id, template, dict_of_dates)
+        df_single_ranking['WorldCup'] = pd.to_datetime(dict_of_dates[id]).year
+        df_single_ranking = df_single_ranking.set_index('WorldCup')
+        multiple_rankings = pd.concat([multiple_rankings, df_single_ranking], axis = 0)
 
 
-wait = WebDriverWait(driver, 10)
-element = wait.until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div[3]/main/section[2]/div/div/div[2]/div/div/div/div/div[3]/div/button/div/svg")))
-element.click()
+    return multiple_rankings
 
-element = driver.find_element_by_class_name("table_rankingTable__7gmVl")
-
-html_content = element.get_attribute('outerHTML')
-soup = BeautifulSoup(html_content, 'html.parser')
-table = soup.find(name='table')
-
-df_full = pd.read_html(str(table))
-
-print(df_full)
-
-time.sleep(2)
-
-"""
