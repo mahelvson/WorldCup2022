@@ -17,7 +17,7 @@ Para construir este dataset, utilizei uma ideia similar ao dataset FIFA Ranking 
 Fonte: www.eloratings.net
 
 ## Dataset WorldBank (./datasets/WorldBankData_raw.csv)
-A ideia deste dataset foi retirar variáveis econômicas dos países que possuem relação com o futebol. As variáveis foram população, PIB e renda per capta e a explicação para esta abordagem foi a regressão feita para o Handicap feita no livro do Soccernomics. Este dataset foi retirado do DataBank do World Bank (http://databank.worldbank.org).
+A ideia deste dataset foi retirar variáveis econômicas dos países que possuem relação com o futebol. As variáveis foram população, PIB e renda per capta e a explicação para esta abordagem foi a regressão feita para o Handicap feita no livro do Soccernomics. Este dataset foi retirado do DataBank do World Bank.
 
 Fonte: https://databank.worldbank.org
 
